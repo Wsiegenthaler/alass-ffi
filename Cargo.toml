@@ -1,0 +1,7 @@
+[workspace]
+
+members = [ "util", "ffi", "ffi-macros" ]
+
+[profile.release]
+lto = true
+opt-level = 3

@@ -1,0 +1,25 @@
+[package]
+name = "alass-ffi"
+version = "0.1.0"
+description = "FFI bindings for subtitle synchronization with alass"
+authors = ["Weston Siegenthaler <westons@gmail.com>"]
+homepage = "https://github.com/wsiegenthaler/alass-util/tree/master/ffi"
+repository = "https://github.com/wsiegenthaler/alass-util"
+license = "GPL-3.0"
+edition = "2018"
+
+[lib]
+name = "alass"
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+alass-util = { path = "../util" }
+alass-ffi-macros = { path = "../ffi-macros" }
+alass-core = "2.0.0"
+subparse = "0.6.2"
+log = "0.4.8"
+fern = "0.5.9"
+chrono = "0.4.10"
+
+[build-dependencies]
+cbindgen = "^0.13"

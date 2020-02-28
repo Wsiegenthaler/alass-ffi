@@ -1,0 +1,24 @@
+[package]
+name = "alass-util"
+version = "0.1.0"
+description = "A Rust convenience API for subtitle synchronization with alass-core"
+authors = ["Weston Siegenthaler <westons@gmail.com>"]
+homepage = "https://github.com/wsiegenthaler/alass-util/tree/master/util"
+repository = "https://github.com/wsiegenthaler/alass-util"
+documentation = "https://docs.rs/alass-util"
+license = "GPL-3.0"
+edition = "2018"
+
+[features]
+default = []
+debug-sample-data = [] # dumps raw sample data to disk for inspection
+debug-voice-activity-data = [] # dumps voice activity data to disk for inspection
+
+[dependencies]
+alass-core = "2.0.0"
+webrtc-vad = "0.4.0"
+subparse = "0.6.2"
+encoding_rs = "0.8.22"
+chardet = "0.2"
+byteorder = "1.3.4"
+log = "0.4.8"
