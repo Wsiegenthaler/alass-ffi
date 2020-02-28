@@ -1,7 +1,7 @@
 # alass-util
 
 ![Crates.io](https://img.shields.io/crates/v/alass-util)
-[![documentation](https://docs.rs/sobol/badge.svg)](https://docs.rs/alass-util)
+[![documentation](https://docs.rs/alass-util/badge.svg)](https://docs.rs/alass-util)
 ![Rust](https://github.com/Wsiegenthaler/alass-util/workflows/build/badge.svg)
 ![minimum rustc 1.40](https://img.shields.io/badge/rustc-1.40+-red.svg)
 [![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0)
