@@ -1,6 +1,6 @@
 # alass-ffi / alass-util
 
-![Rust](https://github.com/Wsiegenthaler/alass-ffi/workflows/build/badge.svg)
+![Build](https://github.com/Wsiegenthaler/alass-ffi/workflows/build/badge.svg)
 ![minimum rustc 1.40](https://img.shields.io/badge/rustc-1.40+-red.svg)
 [![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0)
 
