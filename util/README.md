@@ -27,7 +27,7 @@ See [docs.rs](https://docs.rs/alass-util) for API details.
 
 ## FFI
 
-Not using Rust? See the companion [`alass-ffi`](https://github.com/wsiegenthaler/alass-util/tree/master/ffi) crate for a functionally equivalent C API.
+Not using Rust? See the companion [`alass-ffi`](https://github.com/wsiegenthaler/alass-ffi/tree/master/ffi) crate for a functionally equivalent C API.
 
 ## License
 
