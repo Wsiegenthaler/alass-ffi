@@ -10,7 +10,7 @@ use std::ptr;
 use log::error;
 
 ///
-/// Computes voice activity given a `AudioSink` containing sample data.
+/// Computes voice activity given an `AudioSink` containing sample data.
 /// 
 #[catch_panic(ptr::null_mut())]
 #[no_mangle]

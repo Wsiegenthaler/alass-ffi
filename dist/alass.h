@@ -361,7 +361,7 @@ VoiceActivity *alass_voice_activity_clean(VoiceActivity *activity,
 
 /**
  *
- * Computes voice activity given a `AudioSink` containing sample data.
+ * Computes voice activity given an `AudioSink` containing sample data.
  *
  */
 VoiceActivity *alass_voice_activity_compute(AudioSink *sink);
