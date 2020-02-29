@@ -8,6 +8,7 @@ repository = "https://github.com/wsiegenthaler/alass-ffi"
 license = "GPL-3.0"
 edition = "2018"
 readme = "README.md"
+keywords = ["subtitle", "align", "automatic", "ffi"]
 
 [lib]
 name = "alass"

@@ -9,6 +9,7 @@ documentation = "https://docs.rs/alass-util"
 license = "GPL-3.0"
 edition = "2018"
 readme = "README.md"
+keywords = ["subtitle", "align", "automatic", "wrapper"]
 
 [features]
 default = []
