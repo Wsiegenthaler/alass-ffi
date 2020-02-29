@@ -1,6 +1,6 @@
 [package]
 name = "alass-ffi"
-version = "0.1.0"
+version = "0.1.1"
 description = "FFI bindings for subtitle synchronization with alass"
 authors = ["Weston Siegenthaler <westons@gmail.com>"]
 homepage = "https://github.com/wsiegenthaler/alass-util/tree/master/ffi"
@@ -14,8 +14,8 @@ name = "alass"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-alass-util = { path = "../util", version = "0.1.0" }
 alass-ffi-macros = { path = "../ffi-macros", version = "0.1.0" }
+alass-util = { path = "../util", version = "0.1.1" }
 alass-core = "2.0.0"
 subparse = "0.6.2"
 log = "0.4.8"

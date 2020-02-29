@@ -1,6 +1,6 @@
 [package]
 name = "alass-util"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Rust convenience API for subtitle synchronization with alass-core"
 authors = ["Weston Siegenthaler <westons@gmail.com>"]
 homepage = "https://github.com/wsiegenthaler/alass-util/tree/master/util"
