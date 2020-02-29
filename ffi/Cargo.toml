@@ -13,8 +13,8 @@ name = "alass"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-alass-util = { path = "../util" }
-alass-ffi-macros = { path = "../ffi-macros" }
+alass-util = { path = "../util", version = "0.1.0" }
+alass-ffi-macros = { path = "../ffi-macros", version = "0.1.0" }
 alass-core = "2.0.0"
 subparse = "0.6.2"
 log = "0.4.8"
