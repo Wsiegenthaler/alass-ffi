@@ -13,6 +13,7 @@ keywords = ["subtitle", "align", "automatic", "ffi"]
 [lib]
 name = "alass"
 crate-type = ["staticlib", "cdylib"]
+doc = false
 
 [dependencies]
 alass-ffi-macros = { path = "../ffi-macros", version = "0.1.0" }
