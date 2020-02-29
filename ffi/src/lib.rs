@@ -91,7 +91,7 @@ pub extern "C" fn alass_sync(
 ///
 /// Determines whether the given subtitle is able to be synced
 /// 
-/// Support is indicated by either `ALASS_IINI_SUCCESS`, `ALASS_UNSUPPORTED_FORMAT`,
+/// Support is indicated by either `ALASS_SUCCESS`, `ALASS_UNSUPPORTED_FORMAT`,
 /// or a more specific result code if a determination could not be made.
 /// 
 #[catch_panic(ALASS_INTERNAL_ERROR)]
