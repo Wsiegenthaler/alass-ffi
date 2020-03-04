@@ -8,7 +8,7 @@ use std::ptr;
 use log::*;
 
 ///
-/// Creates a new `SyncOptions` instance initialized to default values
+/// Creates a new options instance initialized to default values
 /// 
 #[catch_panic(ptr::null_mut())]
 #[no_mangle]
@@ -141,7 +141,7 @@ pub extern "C" fn alass_options_set_framerate_correction(options: *mut SyncOptio
 }
 
 ///
-/// Logs the values of the given `SyncOptions` instance (useful for debugging)
+/// Logs the values of the given options instance (useful for debugging)
 /// 
 #[catch_panic]
 #[no_mangle]
@@ -161,7 +161,7 @@ pub extern "C" fn alass_options_log(options: *mut SyncOptions) {
 }
 
 ///
-/// Deallocates `SyncOptions` instance
+/// Deallocates options instance
 /// 
 #[catch_panic]
 #[no_mangle]

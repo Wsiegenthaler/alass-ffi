@@ -18,7 +18,7 @@ use log::error;
 static DEFAULT_SPANS_CAPACITY: usize = 2000;
 
 ///
-/// Creates a new `TimeSpans` buffer ready to accept data (see `alass_timespans_push()`).
+/// Creates a new timespans buffer ready to accept data (see `alass_timespans_push()`).
 /// 
 #[catch_panic(ptr::null_mut())]
 #[no_mangle]
@@ -27,7 +27,7 @@ pub extern "C" fn alass_timespans_new() -> *mut TimeSpans {
 }
 
 ///
-/// Appends timespan to `TimeSpans` buffer. Start and end times are in milliseconds.
+/// Appends timespan to buffer. Start and end times are in milliseconds.
 /// 
 #[catch_panic(ALASS_INTERNAL_ERROR)]
 #[no_mangle]
@@ -149,7 +149,7 @@ pub extern "C" fn alass_timespans_load_subtitle(filename: *const c_char, sub_enc
 }
 
 ///
-/// Deallocates `TimeSpans` instance.
+/// Deallocates timespans buffer.
 /// 
 #[catch_panic]
 #[no_mangle]

@@ -11,7 +11,7 @@ use std::ptr;
 use log::error;
 
 ///
-/// Allocates a new `AudioSink` instance ready to receive audio samples.
+/// Allocates a new audio sink ready to receive audio samples.
 /// 
 #[catch_panic(ptr::null_mut())]
 #[no_mangle]
@@ -20,7 +20,7 @@ pub extern "C" fn alass_audio_sink_new() -> *mut AudioSink {
 }
 
 ///
-/// Send audio samples to `AudioSink` instance. Samples should be 8kHz 16-bit signed
+/// Send audio samples to given sink. Samples should be 8kHz 16-bit signed
 /// little-endian mono.
 /// 
 #[catch_panic(ALASS_INTERNAL_ERROR)]
@@ -52,7 +52,7 @@ pub extern "C" fn alass_audio_sink_send(sink: *mut AudioSink, samples: *mut u8, 
 }
 
 ///
-/// Closes a `AudioSink` instance. Once a sink is closed it can no longer receive additional samples.
+/// Closes a given audio sink. Once a sink is closed it can no longer receive additional samples.
 /// 
 #[catch_panic]
 #[no_mangle]
@@ -65,7 +65,7 @@ pub extern "C" fn alass_audio_sink_close(sink: *mut AudioSink) {
 }
 
 ///
-/// Deallocates `AudioSink` instance.
+/// Deallocates an audio sink.
 /// 
 #[catch_panic]
 #[no_mangle]

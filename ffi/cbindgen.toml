@@ -29,3 +29,6 @@ include_guard = "ALASS_H"
 [parse]
 parse_deps = true
 include = [ "alass-util" ]
+
+[export]
+prefix = "Alass"

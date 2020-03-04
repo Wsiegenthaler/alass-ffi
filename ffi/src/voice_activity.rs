@@ -10,7 +10,7 @@ use std::ptr;
 use log::error;
 
 ///
-/// Computes voice activity given an `AudioSink` containing sample data.
+/// Computes voice activity given an audio sink containing sample data.
 /// 
 #[catch_panic(ptr::null_mut())]
 #[no_mangle]
@@ -30,7 +30,7 @@ pub extern "C" fn alass_voice_activity_compute(sink: *mut AudioSink) -> *mut Voi
 /// 
 /// This operation successively employs mathematical morphological 'erosion'
 /// and 'dilation` operators to clean the output of the voice-activity detector.
-/// The result is a clone of the original `VoiceActivity` instance having
+/// The result is a clone of the original voice activity buffer having
 /// cleaner/fewer timespans.
 /// 
 /// The `opening_radius` and `closing_radius` parameters represent the kernel radii
@@ -51,7 +51,7 @@ pub extern "C" fn alass_voice_activity_clean(activity: *mut VoiceActivity, openi
 }
 
 ///
-/// Deallocates `VoiceActivity` instance.
+/// Deallocates voice activity buffer.
 /// 
 #[catch_panic]
 #[no_mangle]
