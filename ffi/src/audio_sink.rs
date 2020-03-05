@@ -25,7 +25,7 @@ pub extern "C" fn alass_audio_sink_new() -> *mut AudioSink {
 /// 
 #[catch_panic(ALASS_INTERNAL_ERROR)]
 #[no_mangle]
-pub extern "C" fn alass_audio_sink_send(sink: *mut AudioSink, samples: *mut u8, sample_cnt: i32) -> ResultCode {
+pub extern "C" fn alass_audio_sink_send(sink: *mut AudioSink, samples: *mut u8, sample_cnt: i64) -> ResultCode {
     if sink.is_null() {
         error!("Invalid parameter: AudioSink pointer is null");
         return ALASS_INVALID_PARAMS;
