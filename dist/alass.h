@@ -1,4 +1,4 @@
-/***
+/**
  *   _ _ _           _               
  *  | ( ) |__   __ _| | __ _ ___ ___ 
  *  | | | '_ \ / _` | |/ _` / __/ __|
@@ -19,7 +19,7 @@
  *  
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+ **/
 
 #ifndef ALASS_H
 #define ALASS_H
@@ -37,7 +37,7 @@
  * by the synchronization process
  *
  */
-typedef struct AudioSink AudioSink;
+typedef struct AlassAudioSink AlassAudioSink;
 
 /**
  *
@@ -62,7 +62,7 @@ typedef struct AudioSink AudioSink;
  * * `framerate_correction`: Whether to attempt correction of mismatched framerates.
  *
  */
-typedef struct SyncOptions SyncOptions;
+typedef struct AlassSyncOptions AlassSyncOptions;
 
 /**
  *
@@ -75,93 +75,93 @@ typedef struct SyncOptions SyncOptions;
  * writing raw timespan data to/from disk which is useful for caching.
  *
  */
-typedef struct TimeSpans TimeSpans;
+typedef struct AlassTimeSpans AlassTimeSpans;
 
 /**
  *
  * Voice activity as computed by `webrtc-vad`
  *
  */
-typedef struct VoiceActivity VoiceActivity;
+typedef struct AlassVoiceActivity AlassVoiceActivity;
 
-typedef uint32_t ResultCode;
+typedef uint32_t AlassResultCode;
 
-typedef uintptr_t LogLevel;
+typedef uintptr_t AlassLogLevel;
 
-extern const ResultCode ALASS_FILE_DOES_NOT_EXIST;
+extern const AlassResultCode ALASS_FILE_DOES_NOT_EXIST;
 
-extern const ResultCode ALASS_INTERNAL_ERROR;
+extern const AlassResultCode ALASS_INTERNAL_ERROR;
 
-extern const ResultCode ALASS_INVALID_PARAMS;
+extern const AlassResultCode ALASS_INVALID_PARAMS;
 
-extern const ResultCode ALASS_LOG_ALREADY_CONFIGURED;
+extern const AlassResultCode ALASS_LOG_ALREADY_CONFIGURED;
 
-extern const LogLevel ALASS_LOG_DEBUG;
+extern const AlassLogLevel ALASS_LOG_DEBUG;
 
-extern const LogLevel ALASS_LOG_ERROR;
+extern const AlassLogLevel ALASS_LOG_ERROR;
 
-extern const LogLevel ALASS_LOG_INFO;
+extern const AlassLogLevel ALASS_LOG_INFO;
 
-extern const LogLevel ALASS_LOG_NONE;
+extern const AlassLogLevel ALASS_LOG_NONE;
 
-extern const LogLevel ALASS_LOG_TRACE;
+extern const AlassLogLevel ALASS_LOG_TRACE;
 
-extern const LogLevel ALASS_LOG_WARN;
+extern const AlassLogLevel ALASS_LOG_WARN;
 
-extern const ResultCode ALASS_PARSE_ERROR;
+extern const AlassResultCode ALASS_PARSE_ERROR;
 
-extern const ResultCode ALASS_PERMISSION_DENIED;
+extern const AlassResultCode ALASS_PERMISSION_DENIED;
 
-extern const ResultCode ALASS_READ_ERROR;
+extern const AlassResultCode ALASS_READ_ERROR;
 
-extern const ResultCode ALASS_SERIALIZE_ERROR;
+extern const AlassResultCode ALASS_SERIALIZE_ERROR;
 
-extern const ResultCode ALASS_SINK_CLOSED;
+extern const AlassResultCode ALASS_SINK_CLOSED;
 
-extern const ResultCode ALASS_SUCCESS;
+extern const AlassResultCode ALASS_SUCCESS;
 
-extern const ResultCode ALASS_UNSUPPORTED_FORMAT;
+extern const AlassResultCode ALASS_UNSUPPORTED_FORMAT;
 
-extern const ResultCode ALASS_WRITE_ERROR;
+extern const AlassResultCode ALASS_WRITE_ERROR;
 
 /**
  *
- * Closes a `AudioSink` instance. Once a sink is closed it can no longer receive additional samples.
+ * Closes a given audio sink. Once a sink is closed it can no longer receive additional samples.
  *
  */
-void alass_audiosink_close(AudioSink *sink);
+void alass_audio_sink_close(AlassAudioSink *sink);
 
 /**
  *
- * Deallocates `AudioSink` instance.
+ * Deallocates an audio sink.
  *
  */
-void alass_audiosink_free(AudioSink *sink);
+void alass_audio_sink_free(AlassAudioSink *sink);
 
 /**
  *
- * Allocates a new `AudioSink` instance ready to receive audio samples.
+ * Allocates a new audio sink ready to receive audio samples.
  *
  */
-AudioSink *alass_audiosink_new(void);
+AlassAudioSink *alass_audio_sink_new(void);
 
 /**
  *
- * Send audio samples to `AudioSink` instance. Samples should be 8kHz 16-bit signed
+ * Send audio samples to given sink. Samples should be 8kHz 16-bit signed
  * little-endian mono.
  *
  */
-ResultCode alass_audiosink_send(AudioSink *sink, uint8_t *samples, int32_t sample_cnt);
+AlassResultCode alass_audio_sink_send(AlassAudioSink *sink, uint8_t *samples, int64_t sample_cnt);
 
 /**
  *
  * Determines whether the given subtitle is able to be synced
  *
- * Support is indicated by either `ALASS_IINI_SUCCESS`, `ALASS_UNSUPPORTED_FORMAT`,
+ * Support is indicated by either `ALASS_SUCCESS`, `ALASS_UNSUPPORTED_FORMAT`,
  * or a more specific result code if a determination could not be made.
  *
  */
-ResultCode alass_format_is_supported(const char *sub_path);
+AlassResultCode alass_format_is_supported(const char *sub_path);
 
 /**
  *
@@ -181,31 +181,31 @@ ResultCode alass_format_is_supported(const char *sub_path);
  * * `log_file`: Path of the file to recieve log events (or null if not applicable).
  *
  */
-ResultCode alass_log_config(LogLevel stdout_level,
-                            LogLevel stderr_level,
-                            LogLevel log_file_level,
-                            const char *log_file);
+AlassResultCode alass_log_config(AlassLogLevel stdout_level,
+                                 AlassLogLevel stderr_level,
+                                 AlassLogLevel log_file_level,
+                                 const char *log_file);
 
 /**
  *
- * Deallocates `SyncOptions` instance
+ * Deallocates options instance
  *
  */
-void alass_options_free(SyncOptions *options);
+void alass_options_free(AlassSyncOptions *options);
 
 /**
  *
- * Logs the values of the given `SyncOptions` instance (useful for debugging)
+ * Logs the values of the given options instance (useful for debugging)
  *
  */
-void alass_options_log(SyncOptions *options);
+void alass_options_log(AlassSyncOptions *options);
 
 /**
  *
- * Creates a new `SyncOptions` instance initialized to default values
+ * Creates a new options instance initialized to default values
  *
  */
-SyncOptions *alass_options_new(void);
+AlassSyncOptions *alass_options_new(void);
 
 /**
  *
@@ -217,7 +217,7 @@ SyncOptions *alass_options_new(void);
  * spans. (default `false`)
  *
  */
-ResultCode alass_options_set_framerate_correction(SyncOptions *options, bool value);
+AlassResultCode alass_options_set_framerate_correction(AlassSyncOptions *options, bool value);
 
 /**
  *
@@ -227,7 +227,7 @@ ResultCode alass_options_set_framerate_correction(SyncOptions *options, bool val
  * the alignment more accurate, greater numbers make aligning faster. (default `60`)
  *
  */
-ResultCode alass_options_set_interval(SyncOptions *options, int64_t value);
+AlassResultCode alass_options_set_interval(AlassSyncOptions *options, int64_t value);
 
 /**
  *
@@ -237,7 +237,7 @@ ResultCode alass_options_set_interval(SyncOptions *options, int64_t value);
  * to disable speed optimization. (default `1.0`)
  *
  */
-ResultCode alass_options_set_speed_optimization(SyncOptions *options, double *value);
+AlassResultCode alass_options_set_speed_optimization(AlassSyncOptions *options, double *value);
 
 /**
  *
@@ -248,7 +248,7 @@ ResultCode alass_options_set_speed_optimization(SyncOptions *options, double *va
  * subtitles whose misalignment is the result of a constant shift. (default `true`)
  *
  */
-ResultCode alass_options_set_split_mode(SyncOptions *options, bool value);
+AlassResultCode alass_options_set_split_mode(AlassSyncOptions *options, bool value);
 
 /**
  *
@@ -260,7 +260,7 @@ ResultCode alass_options_set_split_mode(SyncOptions *options, bool value);
  * constant amount. (default `7.0`)
  *
  */
-ResultCode alass_options_set_split_penalty(SyncOptions *options, double value);
+AlassResultCode alass_options_set_split_penalty(AlassSyncOptions *options, double value);
 
 /**
  *
@@ -283,26 +283,26 @@ ResultCode alass_options_set_split_penalty(SyncOptions *options, double value);
  *    `SyncOptions` or `alass` documentation for details.
  *
  */
-ResultCode alass_sync(const char *sub_path_in,
-                      const char *sub_path_out,
-                      TimeSpans *ref_spans,
-                      double ref_fps,
-                      const char *sub_encoding,
-                      SyncOptions *options);
+AlassResultCode alass_sync(const char *sub_path_in,
+                           const char *sub_path_out,
+                           AlassTimeSpans *ref_spans,
+                           double ref_fps,
+                           const char *sub_encoding,
+                           AlassSyncOptions *options);
 
 /**
  *
  * Computes timespans given detected voice-activity.
  *
  */
-TimeSpans *alass_timespans_compute(VoiceActivity *activity);
+AlassTimeSpans *alass_timespans_compute(AlassVoiceActivity *activity);
 
 /**
  *
- * Deallocates `TimeSpans` instance.
+ * Deallocates timespans buffer.
  *
  */
-void alass_timespans_free(TimeSpans *spans);
+void alass_timespans_free(AlassTimeSpans *spans);
 
 /**
  *
@@ -310,35 +310,35 @@ void alass_timespans_free(TimeSpans *spans);
  * null if no file exists at the given path.
  *
  */
-TimeSpans *alass_timespans_load_raw(const char *filename);
+AlassTimeSpans *alass_timespans_load_raw(const char *filename);
 
 /**
  *
  * Loads timespans from subtitle file. Returns null if no file exists at the given path.
  *
  */
-TimeSpans *alass_timespans_load_subtitle(const char *filename, const char *sub_encoding);
+AlassTimeSpans *alass_timespans_load_subtitle(const char *filename, const char *sub_encoding);
 
 /**
  *
- * Creates a new `TimeSpans` buffer ready to accept data (see `alass_timespans_push()`).
+ * Creates a new timespans buffer ready to accept data (see `alass_timespans_push()`).
  *
  */
-TimeSpans *alass_timespans_new(void);
+AlassTimeSpans *alass_timespans_new(void);
 
 /**
  *
- * Appends timespan to `TimeSpans` buffer. Start and end times are in milliseconds.
+ * Appends timespan to buffer. Start and end times are in milliseconds.
  *
  */
-ResultCode alass_timespans_push(TimeSpans *spans, int64_t start_time, int64_t end_time);
+AlassResultCode alass_timespans_push(AlassTimeSpans *spans, int64_t start_time, int64_t end_time);
 
 /**
  *
  * Saves timespans to disk with the given `filename` (see `alass_timespans_load_raw()`).
  *
  */
-ResultCode alass_timespans_save_raw(TimeSpans *spans, const char *filename);
+AlassResultCode alass_timespans_save_raw(AlassTimeSpans *spans, const char *filename);
 
 /**
  *
@@ -346,7 +346,7 @@ ResultCode alass_timespans_save_raw(TimeSpans *spans, const char *filename);
  *
  * This operation successively employs mathematical morphological 'erosion'
  * and 'dilation` operators to clean the output of the voice-activity detector.
- * The result is a clone of the original `VoiceActivity` instance having
+ * The result is a clone of the original voice activity buffer having
  * cleaner/fewer timespans.
  *
  * The `opening_radius` and `closing_radius` parameters represent the kernel radii
@@ -355,22 +355,22 @@ ResultCode alass_timespans_save_raw(TimeSpans *spans, const char *filename);
  * window will be removed and any gaps larger than this window will be filled.
  *
  */
-VoiceActivity *alass_voice_activity_clean(VoiceActivity *activity,
-                                          uintptr_t opening_radius,
-                                          uintptr_t closing_radius);
+AlassVoiceActivity *alass_voice_activity_clean(AlassVoiceActivity *activity,
+                                               uintptr_t opening_radius,
+                                               uintptr_t closing_radius);
 
 /**
  *
- * Computes voice activity given an `AudioSink` containing sample data.
+ * Computes voice activity given an audio sink containing sample data.
  *
  */
-VoiceActivity *alass_voice_activity_compute(AudioSink *sink);
+AlassVoiceActivity *alass_voice_activity_compute(AlassAudioSink *sink);
 
 /**
  *
- * Deallocates `VoiceActivity` instance.
+ * Deallocates voice activity buffer.
  *
  */
-void alass_voice_activity_free(VoiceActivity *activity);
+void alass_voice_activity_free(AlassVoiceActivity *activity);
 
 #endif /* ALASS_H */
