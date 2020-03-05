@@ -84,7 +84,7 @@ pub fn sync(
         if opt.framerate_correction {
             let (_, fr) = guess_fps_ratio(&ref_spans, &sub_spans, ref_fps);
             if fr.ratio - 1.0 < std::f64::EPSILON {
-                debug!("detected framerate = {:.3} (reference_framerate = {:.3})", fr.fps, ref_fps)
+                info!("detected framerate = {:.3} (reference_framerate = {:.3})", fr.fps, ref_fps)
             };
             let scaled_spans = sub_spans.into_iter().map(|x| x.scaled(fr.ratio)).collect();
             (fr.ratio, scaled_spans)
@@ -97,11 +97,11 @@ pub fn sync(
         if !opt.split_mode {
             let inc_span_cnt = sub_spans.len();
             let (delta, _) = align_nosplit(&ref_spans, &sub_spans, standard_scoring, NoProgressInfo {});
-            debug!("no split mode: shifting subtitles by {}ms", delta * opt.interval);
+            info!("no split mode: shifting subtitles by {}ms", delta * opt.interval);
             vec::from_elem(delta, inc_span_cnt)
         } else {
             let (deltas, _) = align(&ref_spans, &sub_spans, opt.split_penalty, opt.speed_optimization, standard_scoring, NoProgressInfo {});
-            debug!("split mode: shifting first subtitle by {}ms and last by {}ms", delta_str(deltas.first(), opt.interval), delta_str(deltas.last(), opt.interval));
+            info!("split mode: shifting first subtitle by {}ms and last by {}ms", delta_str(deltas.first(), opt.interval), delta_str(deltas.last(), opt.interval));
             deltas
         };
     

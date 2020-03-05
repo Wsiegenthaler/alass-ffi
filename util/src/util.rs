@@ -63,7 +63,7 @@ pub fn detect_encoding(data: &[u8]) -> Option<&'static Encoding> {
     let charset = chardet::charset2encoding(&charset);
     let encoding = Encoding::for_label(charset.as_bytes());
     if encoding.is_some() {
-        log::debug!("subtitle encoding '{}' detected (confidence='{}')", charset, confidence);
+        log::info!("subtitle encoding '{}' detected (confidence='{}')", charset, confidence);
     }
     encoding
 }
