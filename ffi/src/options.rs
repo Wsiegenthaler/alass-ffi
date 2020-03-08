@@ -90,32 +90,28 @@ pub extern "C" fn alass_options_set_split_penalty(options: *mut SyncOptions, val
 ///
 /// Sets the `alass` "speed_optimization" parameter
 /// 
-/// Greatly speeds up synchronization by sacrificing some accuracy. Set to `null` or zero
-/// to disable speed optimization. (default `1.0`)
+/// Greatly speeds up synchronization by sacrificing some accuracy. Set to zero to
+/// disable speed optimization. (default `1.0`)
 /// 
 #[catch_panic(ALASS_INTERNAL_ERROR)]
 #[no_mangle]
-pub extern "C" fn alass_options_set_speed_optimization(options: *mut SyncOptions, value: *mut f64) -> ResultCode {
+pub extern "C" fn alass_options_set_speed_optimization(options: *mut SyncOptions, value: f64) -> ResultCode {
     if options.is_null() {
         error!("Invalid parameter: SyncOptions pointer is null");
         return ALASS_INVALID_PARAMS;
     }
 
     let o = from_ptr(options);
-    let value = from_ptr_safe(value).copied();
-    match value {
-        Some(v) if v > 0.0 => {
-            o.speed_optimization = value;
-            ALASS_SUCCESS
-        },
-        Some(v) if v < 0.0 => {
-            error!("Invalid parameter: 'speed_optimization' cannot be negative (value={})", v);
-            ALASS_INVALID_PARAMS
-        },
-        _ => {
-            o.speed_optimization = None;
-            ALASS_SUCCESS
-        }
+
+    if value > 0.0 {
+        o.speed_optimization = Some(value);
+        ALASS_SUCCESS
+    } else if value == 0.0 {
+        o.speed_optimization = None;
+        ALASS_SUCCESS
+    } else {
+        error!("Invalid parameter: 'speed_optimization' cannot be negative (value={})", value);
+        ALASS_INVALID_PARAMS
     }
 }
 
@@ -154,7 +150,7 @@ pub extern "C" fn alass_options_log(options: *mut SyncOptions) {
     let o = from_ptr(options);
     let speed_opt = match o.speed_optimization {
         Some(v) => format!("{}", v),
-        None => String::from("NO")
+        None => String::from("false")
     };
     info!("SyncOptions(interval={}, split_mode={}, split_penalty={}, speed_optimization={}, framerate_correction={})",
         o.interval, o.split_mode, o.split_penalty, speed_opt, o.framerate_correction);

@@ -233,11 +233,11 @@ AlassResultCode alass_options_set_interval(AlassSyncOptions *options, int64_t va
  *
  * Sets the `alass` "speed_optimization" parameter
  *
- * Greatly speeds up synchronization by sacrificing some accuracy. Set to `null` or zero
- * to disable speed optimization. (default `1.0`)
+ * Greatly speeds up synchronization by sacrificing some accuracy. Set to zero to
+ * disable speed optimization. (default `1.0`)
  *
  */
-AlassResultCode alass_options_set_speed_optimization(AlassSyncOptions *options, double *value);
+AlassResultCode alass_options_set_speed_optimization(AlassSyncOptions *options, double value);
 
 /**
  *
