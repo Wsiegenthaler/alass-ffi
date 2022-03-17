@@ -5,13 +5,13 @@ description = "Procedural macros for alass-ffi crate"
 authors = ["Weston Siegenthaler <westons+github@gmail.com>"]
 license = "GPL-3.0"
 repository = "https://github.com/Wsiegenthaler/alass-ffi.git"
-edition = "2018"
+edition = "2021"
 
 [lib]
 proc-macro = true
 
 [dependencies]
-syn = { version = "1.0.13", features = ["full"] }
+syn = { version = "1.0.89", features = ["full"] }
 quote = "1.0.2"
 
 [dev-dependencies]

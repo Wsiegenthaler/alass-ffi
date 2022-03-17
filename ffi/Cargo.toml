@@ -6,7 +6,7 @@ authors = ["Weston Siegenthaler <westons@gmail.com>"]
 homepage = "https://github.com/wsiegenthaler/alass-ffi/tree/master/ffi"
 repository = "https://github.com/wsiegenthaler/alass-ffi"
 license = "GPL-3.0"
-edition = "2018"
+edition = "2021"
 readme = "README.md"
 keywords = ["subtitle", "align", "automatic", "ffi"]
 
@@ -19,9 +19,9 @@ doc = false
 alass-ffi-macros = { path = "../ffi-macros", version = "0.1.0" }
 alass-util = { path = "../util", version = "0.1.2" }
 alass-core = "2.0.0"
-subparse = "0.6.2"
+subparse = "0.7.0"
 log = "0.4.8"
-fern = "0.5.9"
+fern = "0.6.0"
 chrono = "0.4.10"
 
 [build-dependencies]

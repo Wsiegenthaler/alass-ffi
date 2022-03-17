@@ -174,7 +174,7 @@ pub fn open_sub_file(path: &str, sub_encoding: Option<String>) -> Result<(Subtit
 /// 
 pub fn parse_sub_file(data: &[u8], format: SubtitleFormat, sub_encoding: Option<String>) -> SubparseResult<SubtitleFile> {
     let parse_bytes = |encoding: &'static Encoding| -> SubparseResult<SubtitleFile> {
-        subparse::parse_bytes(format, &data, encoding, DEFAULT_MICRODVD_FPS)
+        subparse::parse_bytes(format, &data, Some(encoding), DEFAULT_MICRODVD_FPS)
     };
     match lookup_encoding(sub_encoding) {
         Some(user_encoding) => 
