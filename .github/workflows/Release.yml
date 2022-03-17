@@ -7,13 +7,34 @@ name: Release
 
 jobs:
 
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version:
+          - 1.46.0 # min supported version
+          - stable
+          - beta
+          - nightly
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.version }}
+        override: true
+    - name: Run tests
+      run: cargo test --verbose
+      env:
+        RUST_BACKTRACE: 1
+
   create-release:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Checkout code
         uses: actions/checkout@master
       - name: Lookup version
-        run: echo ::set-env name=version::$(awk -F'"' '/^version/ {print $2}' ffi/Cargo.toml | head -n 1)
+        run: echo version=$(awk -F'"' '/^version/ {print $2}' ffi/Cargo.toml | head -n 1) >> $GITHUB_ENV
       - name: Create Release
         id: create_release
         uses: actions/create-release@latest
@@ -35,6 +56,7 @@ jobs:
   linux:
     name: Linux
     runs-on: ubuntu-latest
+    needs: create-release
     strategy:
       matrix:
         toolchain:
@@ -81,9 +103,12 @@ jobs:
           asset_name: ${{ steps.package.outputs.bundle_file }}
           asset_content_type: application/gzip
 
-  macos:
+
+  # MacOS Intel
+  macos-x86_64:
     name: macos
-    runs-on: macos-10.15
+    runs-on: macos-latest
+    needs: create-release
     strategy:
       matrix:
         toolchain:
@@ -104,6 +129,11 @@ jobs:
           use-cross: true
           command: build
           args: --release --package alass-ffi --target ${{ matrix.arch }}
+      - name: Upload dylib for later use in macos-universal job
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-x86_64-dylib
+          path: target/${{ matrix.arch }}/release/libalass.dylib
       - name: Generate release bundle
         id: package
         env:
@@ -129,9 +159,115 @@ jobs:
           asset_name: ${{ steps.package.outputs.bundle_file }}
           asset_content_type: application/gzip
 
+  # Apple Silicon
+  macos-aarch64:
+    name: macos
+    runs-on: macos-latest
+    needs: create-release
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+        arch:
+          - aarch64-apple-darwin
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          target: ${{ matrix.arch }}
+          override: true
+          profile: minimal
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --package alass-ffi --target ${{ matrix.arch }}
+      - name: Upload dylib for later use in macos-universal job
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-aarch64-dylib
+          path: target/${{ matrix.arch }}/release/libalass.dylib
+      - name: Generate release bundle
+        id: package
+        env:
+          TARGET: ${{ matrix.arch }}
+          PLATFORM: macos
+        run: bin/bundle-release.sh
+        shell: bash
+      - name: Download Release URL File
+        uses: actions/download-artifact@v1
+        with:
+          name: release-url
+      - name: Output Release URL
+        id: release_url
+        run: echo ::set-output name=release_url::$(cat release-url/release-url.txt)
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release_url.outputs.release_url }}
+          asset_path: ./${{ steps.package.outputs.bundle_path }}
+          asset_name: ${{ steps.package.outputs.bundle_file }}
+          asset_content_type: application/gzip
+
+  macos-universal:
+    name: macos-universal
+    runs-on: macos-latest
+    needs: [macos-x86_64, macos-aarch64]
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Download Intel dylib
+        uses: actions/download-artifact@v3
+        with:
+          name: macos-x86_64-dylib
+      - name: Move Intel dylib to unique path
+        run: mv libalass.dylib libalass-x86_64.dylib
+
+      - name: Download Apple Silicon dylib
+        uses: actions/download-artifact@v3
+        with:
+          name: macos-aarch64-dylib
+      - name: Move Apple Silicon dylib to unique path
+        run: mv libalass.dylib libalass-aarch64.dylib
+
+      - name: Combine Intel and Apple Silicon into single universal library
+        run: lipo libalass-x86_64.dylib libalass-aarch64.dylib -output libalass.dylib -create
+        shell: bash
+
+      - name: Generate release bundle
+        id: package
+        env:
+          TARGET: universal-apple-darwin
+          PLATFORM: macos
+        run: bin/bundle-release.sh
+        shell: bash
+      - name: Download Release URL File
+        uses: actions/download-artifact@v1
+        with:
+          name: release-url
+      - name: Output Release URL
+        id: release_url
+        run: echo ::set-output name=release_url::$(cat release-url/release-url.txt)
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release_url.outputs.release_url }}
+          asset_path: ./${{ steps.package.outputs.bundle_path }}
+          asset_name: ${{ steps.package.outputs.bundle_file }}
+          asset_content_type: application/gzip
+
   windows:
     name: Windows
     runs-on: windows-2019
+    needs: create-release
     strategy:
       matrix:
         toolchain:

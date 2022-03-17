@@ -41,8 +41,13 @@ mkdir -p $BUNDLE_DIR
 # Include generated header
 cp $(find $BUILD_DIR -type f -name 'alass.h' | xargs ls -1t | head -n 1) $BUNDLE_DIR
 
-# Include static lib
-cp $BUILD_DIR/$LIB_STATIC $BUNDLE_DIR
+# Include static lib (except for MacOS universal)
+if [[ $PLATFORM != macos && $TARGET != universal-apple-darwin ]]; then
+  cp $BUILD_DIR/$LIB_STATIC $BUNDLE_DIR
+fi
+
+# Look for MacOS Universal dylib in the root directory
+[[ $PLATFORM =~ macos && $TARGET =~ universal ]] && BUILD_DIR=.
 
 # Include dynamic lib
 [[ ! $IOS ]] && cp $BUILD_DIR/$LIB_DYNAMIC $BUNDLE_DIR

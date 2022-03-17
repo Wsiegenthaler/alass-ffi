@@ -1,14 +1,16 @@
-name: Build
+name: Test
 
-on: [push]
+on:
+  push:
+    branches: master
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         version:
-          - 1.40.0 # min supported version
+          - 1.46.0 # min supported version
           - stable
           - beta
           - nightly
