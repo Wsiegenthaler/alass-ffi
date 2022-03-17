@@ -1,6 +1,6 @@
 [package]
 name = "alass-ffi-macros"
-version = "0.1.0"
+version = "0.2.0"
 description = "Procedural macros for alass-ffi crate"
 authors = ["Weston Siegenthaler <westons+github@gmail.com>"]
 license = "GPL-3.0"
