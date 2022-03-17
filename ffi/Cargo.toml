@@ -16,8 +16,8 @@ crate-type = ["staticlib", "cdylib"]
 doc = false
 
 [dependencies]
-alass-ffi-macros = { path = "../ffi-macros", version = "0.1.0" }
-alass-util = { path = "../util", version = "0.1.2" }
+alass-ffi-macros = { path = "../ffi-macros", version = "0.2.0" }
+alass-util = { path = "../util", version = "0.2.0" }
 alass-core = "2.0.0"
 subparse = "0.7.0"
 log = "0.4.8"
