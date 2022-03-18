@@ -239,6 +239,11 @@ jobs:
         run: lipo libalass-x86_64.dylib libalass-aarch64.dylib -output libalass.dylib -create
         shell: bash
 
+      - name: Build (necessary only to produce header)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --package alass-ffi
       - name: Generate release bundle
         id: package
         env:
