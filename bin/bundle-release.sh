@@ -39,7 +39,7 @@ BUNDLE_PATH=dist/$BUNDLE_FILE
 mkdir -p $BUNDLE_DIR
 
 # Include generated header
-cp $(find $BUILD_DIR -type f -name 'alass.h' | xargs ls -1t | head -n 1) $BUNDLE_DIR
+cp $(find ./target/**/release -type f -name 'alass.h' | xargs ls -1t | head -n 1) $BUNDLE_DIR
 
 # Include static lib (except for MacOS universal)
 if [[ $PLATFORM != macos && $TARGET != universal-apple-darwin ]]; then
