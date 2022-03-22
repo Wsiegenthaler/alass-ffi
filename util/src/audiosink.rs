@@ -178,7 +178,7 @@ impl AudioSink {
             Some(dir) => PathBuf::from(dir),
             None => match std::env::current_dir() {
                 Ok(dir) => dir,
-                Err(e) => panic!("[alass-util] Unable to obtain current working directory in order to dump raw sample data! (msg='{}')", e.description())
+                Err(e) => panic!("[alass-util] Unable to obtain current working directory in order to dump raw sample data! (msg='{}')", e)
             }
         };
         path.push(String::from(filename));
@@ -190,7 +190,7 @@ impl AudioSink {
         let bytes: &[u8] = unsafe { slice::from_raw_parts(chunk.as_ptr() as *const u8, chunk.len()*2) };
         match file.write_all(bytes) {
             Ok(_) => (),
-            Err(e) => panic!("[libalass] Error writing raw sample data to file! (msg='{}')", e.description())
+            Err(e) => panic!("[libalass] Error writing raw sample data to file! (msg='{}')", e)
         }
     }
 
@@ -199,7 +199,7 @@ impl AudioSink {
         let bytes: &[u8] = &[ if *is_voice { 1_u8 } else { 0u8 } ];
         match file.write_all(bytes) {
             Ok(_) => (),
-            Err(e) => panic!("[libalass] Error writing voice activity data to file! (msg='{}')", e.description())
+            Err(e) => panic!("[libalass] Error writing voice activity data to file! (msg='{}')", e)
         }
     }
 
