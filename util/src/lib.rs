@@ -19,6 +19,7 @@ mod audiosink;
 mod timespans;
 mod voice_activity;
 mod options;
+mod voice;
 
 ///
 /// Various utility functions for conversions, charset detection, etc.

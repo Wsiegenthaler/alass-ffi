@@ -50,7 +50,8 @@ pub fn catch_panic(args: TokenStream, item: TokenStream) -> TokenStream {
     let wrapped = quote! {
         #(#attrs)*
         #vis #sig {
-            match std::panic::catch_unwind(|| { #block }) {
+            use std::panic::AssertUnwindSafe;
+            match std::panic::catch_unwind(AssertUnwindSafe(|| { #block })) {
                 Ok(v) => v,
                 Err(e) => {
                     match e.downcast_ref::<&'static str>() {

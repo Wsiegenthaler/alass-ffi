@@ -16,7 +16,13 @@ use log::error;
 #[catch_panic(ptr::null_mut())]
 #[no_mangle]
 pub extern "C" fn alass_audio_sink_new() -> *mut AudioSink {
-    to_ptr(AudioSink::default())
+    match AudioSink::default() {
+        Ok(sink) => to_ptr(sink),
+        Err(msg) => {
+            error!("{}", msg);
+            ptr::null_mut()
+        }
+    }
 }
 
 ///

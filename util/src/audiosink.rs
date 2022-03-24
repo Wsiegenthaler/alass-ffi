@@ -12,35 +12,47 @@ use std::{io::Write, path::PathBuf};
 use std::slice;
 
 use log::error;
-use webrtc_vad::{Vad, SampleRate, VadMode};
 use byteorder::{ByteOrder, LittleEndian};
 
+#[cfg(feature = "voice-silero")]
+use crate::voice::silero_vad::SileroVad;
+
+#[cfg(feature = "voice-webrtc")]
+use crate::voice::webrtc_vad::WebRtcVad;
+
 use crate::VoiceActivity;
+use crate::voice::VoiceDetector;
 
 use AudioSinkError::*;
 
-/// The sensitivity of the WebRTC voice-activity detector. Lowering the sensitivity
-/// greatly reduces false positives but increases the chance of missed detections.
-const VAD_MODE: VadMode = VadMode::LowBitrate;
-
-/// The sample rate expected by the voice-activity detector
-const VAD_SAMPLE_RATE: SampleRate = SampleRate::Rate8kHz;
 
 /// The millisecond duration of each chunk to be processed by the voice-activity
 /// detector. The WebRTC VAD expects chunks of 10, 20, or 30ms.
 const CHUNK_MILLIS: usize = 30;
 
 /// The number of samples per chunk to be processed by the voice-activity detector
-const CHUNK_SAMPLES: usize = CHUNK_MILLIS * VAD_SAMPLE_RATE as usize / 1000;
+#[cfg(feature = "voice-silero")] const CHUNK_SAMPLES: usize = CHUNK_MILLIS * 16;
+#[cfg(feature = "voice-webrtc")] const CHUNK_SAMPLES: usize = CHUNK_MILLIS * 8;
+
+/// The threshold produced by silero-vad beyond which the chunk is considered to contain voice(s)
+#[cfg(feature = "voice-silero")] const PROB_THRESHOLD: f32 = 0.75;
 
 ///
 /// Receives audio samples to be processed for voice-activity and used as reference
 /// by the synchronization process
 /// 
 pub struct AudioSink {
+
     pub state: AudioSinkState,
+
     sample_buffer: Vec<i16>,
-    vad: Vad,
+
+    #[cfg(feature = "voice-silero")] 
+    vad: SileroVad,
+
+    #[cfg(feature = "voice-webrtc")]
+    vad: WebRtcVad,
+
     vad_buffer: Vec<bool>,
 
     #[cfg(feature = "debug-sample-data")]
@@ -50,16 +62,22 @@ pub struct AudioSink {
     vad_file: File,
 }
 
-impl Default for AudioSink {
+impl AudioSink {
 
     ///
     /// Creates a new `AudioSink` instance ready to accept sample data
     /// 
-    fn default() -> Self {
-        AudioSink {
+    pub fn default() -> Result<Self, String> {
+       #[cfg(feature = "voice-silero")]
+       let vad = SileroVad::new(CHUNK_SAMPLES, PROB_THRESHOLD)?;
+
+       #[cfg(feature = "voice-webrtc")]
+       let vad = WebRtcVad::new(SampleRate::Rate8kHz, VadMode::LowBitrate);
+
+        Ok(AudioSink {
             state: AudioSinkState::Open,
             sample_buffer: Vec::new(),
-            vad: Vad::new_with_rate_and_mode(VAD_SAMPLE_RATE, VAD_MODE),
+            vad,
             vad_buffer: Vec::new(),
 
             #[cfg(feature = "debug-sample-data")]
@@ -67,12 +85,8 @@ impl Default for AudioSink {
 
             #[cfg(feature = "debug-voice-activity-data")]
             vad_file: AudioSink::create_debug_file("alass-voice-activity-data")
-        }
-
+        })
     }
-}
-
-impl AudioSink {
 
     ///
     /// Recieve incoming samples
@@ -125,17 +139,16 @@ impl AudioSink {
         }
 
         // Detect voice activity
-        let vad_result = self.vad.is_voice_segment(chunk);
-        match vad_result {
+        match &self.vad.is_voice_segment(chunk) {
             Ok(is_voice) => {
                 // Store voice activity for this chunk to buffer
-                self.vad_buffer.push(is_voice);
+                self.vad_buffer.push(*is_voice);
 
                 // Dump voice activity data to file for debugging
                 #[cfg(feature = "debug-voice-activity-data")]
                 AudioSink::dump_vad(&is_voice, &mut self.vad_file);
             },
-            Err(_) => return Err(VoiceDetectionError)
+            _ => return Err(VoiceDetectionError)
         }
 
         // Dump samples to file for debugging
