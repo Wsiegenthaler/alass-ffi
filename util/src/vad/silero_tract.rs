@@ -5,35 +5,30 @@ use std::include_bytes;
 use tract_onnx::prelude::*;
 use tract_ndarray::*;
 
-use crate::voice::VoiceDetector;
 
+const PROB_THRESHOLD: f32 = 0.7;
 
 type RunnableOnnxModel = SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
 
-pub struct SileroVad {
+pub struct Vad {
     model: RunnableOnnxModel,
     h: Tensor,
     c: Tensor,
-    chunk_size: usize,
-    threshold: f32
+    pub chunk_size: usize
 }
 
-impl SileroVad {
+impl Vad {
 
-    pub fn new(chunk_size: usize, threshold: f32) -> Result<Self, String> {
+    pub fn new() -> Result<Self, String> {
+        let chunk_size = (Self::expected_chunk_millis() as f32 / 1000f32 * Self::expected_sample_rate() as f32) as usize;
+
         match Self::model(chunk_size) {
             Ok(model) => {
                 // Model state
                 let h: Tensor = Array3::from_shape_fn((2, 1, 64), |(_, _, _)| 0f32).into();
                 let c: Tensor = Array3::from_shape_fn((2, 1, 64), |(_, _, _)| 0f32).into();
       
-                Ok(SileroVad {
-                    model,
-                    h,
-                    c,
-                    chunk_size,
-                    threshold
-                })
+                Ok(Vad { model, h, c, chunk_size })
             },
             Err(err) => Err(format!("Unable to create silaro-vad onnx graph! ({})", err))
         }
@@ -41,7 +36,7 @@ impl SileroVad {
 
     fn model(chunk_size: usize) -> TractResult<RunnableOnnxModel> {
         let model: RunnableOnnxModel = tract_onnx::onnx()
-            .model_for_read(&mut Cursor::new(include_bytes!("silero_vad.onnx")))?
+            .model_for_read(&mut Cursor::new(include_bytes!("silero_net.onnx")))?
             .with_input_names(&["input", "h0", "c0"])?
             .with_output_names(&["output", "hn", "cn"])?
             .with_input_fact(0, InferenceFact::dt_shape(f32::datum_type(), tvec!(1, chunk_size)))?
@@ -53,6 +48,7 @@ impl SileroVad {
     }
 
     fn process_chunk(&mut self, chunk: &[i16]) -> TractResult<bool> {
+
         let input: Tensor = Array2::from_shape_fn((1, self.chunk_size), |(_, j)| chunk[j] as f32).into();
         let result = &self.model.run(tvec![input, self.h.clone(), self.c.clone()])?;
         
@@ -66,16 +62,21 @@ impl SileroVad {
         self.c = Array3::from_shape_fn((2, 1, 64), |(i, j, k)| cn[[i, j, k]]).into();
 
         // Determine voice activity
-        Ok(self.threshold <= output[[0, 1, 0]])
+        Ok(PROB_THRESHOLD <= output[[0, 1, 0]])
     }
 
-}
-
-impl VoiceDetector for SileroVad {
-    fn is_voice_segment(&mut self, chunk: &[i16]) -> Result<bool, String> {
+    pub fn is_voice_segment(&mut self, chunk: &[i16]) -> Result<bool, String> {
         match self.process_chunk(chunk) {
             Ok(is_voice) => Ok(is_voice),
             Err(err) => Err(format!("The silero-vad module encountered an error while processing samples for voice activity. ({})", err))
         }
+    }
+
+    pub fn expected_sample_rate() -> usize {
+        16000
+    }
+
+    pub fn expected_chunk_millis() -> usize {
+        96
     }
 }

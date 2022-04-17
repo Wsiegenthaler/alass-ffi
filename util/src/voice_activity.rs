@@ -2,11 +2,11 @@
 use crate::morph::{morph_opening, morph_closing};
 
 ///
-/// Voice activity as computed by `webrtc-vad`
+/// Voice activity as computed by either WebRtcVad or Silero
 /// 
 pub struct VoiceActivity {
     pub data: Vec<bool>,
-    pub chunk_millis: u64
+    pub chunk_millis: usize
 }
 
 impl VoiceActivity {

@@ -25,6 +25,14 @@ What this crate does not provide:
 
 See [docs.rs](https://docs.rs/alass-util) for API details.
 
+#### Voice Activity Detector
+
+This crate provides two options for voice activity detection:
+
+1. [WebRTC VAD](https://crates.io/crates/webrtc-vad): The default detector used by this crate. Fast but lower quality results. See `vad-webrtc` Cargo feature.
+2. [Silero](https://github.com/snakers4/silero-vad): LSTM model with much better results but longer processing time. See the `vad-silero-tract` or `vad-silero-onnx
+runtime` depending on your choice of ONNX runtime. 
+
 ## FFI
 
 Not using Rust? See the [`alass-ffi`](https://github.com/wsiegenthaler/alass-ffi/tree/master/ffi) companion crate for C bindings.

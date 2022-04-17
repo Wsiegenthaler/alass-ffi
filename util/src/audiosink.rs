@@ -5,37 +5,28 @@ use std::io;
 use std::io::{BufReader, prelude::*};
 use std::{error::Error, fmt};
 
+use log::error;
+use byteorder::{ByteOrder, LittleEndian};
+
+#[cfg(feature = "vad-webrtc")]
+use crate::vad::webrtc::Vad;
+
+#[cfg(feature = "vad-silero-onnxruntime")]
+use crate::vad::silero_onnxruntime::Vad;
+
+#[cfg(feature = "vad-silero-tract")]
+use crate::vad::silero_tract::Vad;
+
+use crate::VoiceActivity;
+
+use AudioSinkError::*;
+
 #[cfg(any(feature = "debug-sample-data", feature = "debug-voice-activity-data"))]
 use std::{io::Write, path::PathBuf};
 
 #[cfg(feature = "debug-sample-data")]
 use std::slice;
 
-use log::error;
-use byteorder::{ByteOrder, LittleEndian};
-
-#[cfg(feature = "voice-silero")]
-use crate::voice::silero_vad::SileroVad;
-
-#[cfg(feature = "voice-webrtc")]
-use crate::voice::webrtc_vad::WebRtcVad;
-
-use crate::VoiceActivity;
-use crate::voice::VoiceDetector;
-
-use AudioSinkError::*;
-
-
-/// The millisecond duration of each chunk to be processed by the voice-activity
-/// detector. The WebRTC VAD expects chunks of 10, 20, or 30ms.
-const CHUNK_MILLIS: usize = 30;
-
-/// The number of samples per chunk to be processed by the voice-activity detector
-#[cfg(feature = "voice-silero")] const CHUNK_SAMPLES: usize = CHUNK_MILLIS * 16;
-#[cfg(feature = "voice-webrtc")] const CHUNK_SAMPLES: usize = CHUNK_MILLIS * 8;
-
-/// The threshold produced by silero-vad beyond which the chunk is considered to contain voice(s)
-#[cfg(feature = "voice-silero")] const PROB_THRESHOLD: f32 = 0.75;
 
 ///
 /// Receives audio samples to be processed for voice-activity and used as reference
@@ -47,11 +38,7 @@ pub struct AudioSink {
 
     sample_buffer: Vec<i16>,
 
-    #[cfg(feature = "voice-silero")] 
-    vad: SileroVad,
-
-    #[cfg(feature = "voice-webrtc")]
-    vad: WebRtcVad,
+    vad: Vad,
 
     vad_buffer: Vec<bool>,
 
@@ -68,45 +55,44 @@ impl AudioSink {
     /// Creates a new `AudioSink` instance ready to accept sample data
     /// 
     pub fn default() -> Result<Self, String> {
-       #[cfg(feature = "voice-silero")]
-       let vad = SileroVad::new(CHUNK_SAMPLES, PROB_THRESHOLD)?;
+       let vad = Vad::new().map_err(|s| format!("Error instantiating voice-detector! ({})", s))?;
 
-       #[cfg(feature = "voice-webrtc")]
-       let vad = WebRtcVad::new(SampleRate::Rate8kHz, VadMode::LowBitrate);
+       Ok(AudioSink {
+           state: AudioSinkState::Open,
 
-        Ok(AudioSink {
-            state: AudioSinkState::Open,
-            sample_buffer: Vec::new(),
-            vad,
-            vad_buffer: Vec::new(),
+           sample_buffer: Vec::new(),
 
-            #[cfg(feature = "debug-sample-data")]
-            sample_file: AudioSink::create_debug_file("alass-sample-data.raw"),
+           vad,
 
-            #[cfg(feature = "debug-voice-activity-data")]
-            vad_file: AudioSink::create_debug_file("alass-voice-activity-data")
-        })
+           vad_buffer: Vec::new(),
+
+           #[cfg(feature = "debug-sample-data")]
+           sample_file: AudioSink::create_debug_file("alass-sample-data.raw"),
+
+           #[cfg(feature = "debug-voice-activity-data")]
+           vad_file: AudioSink::create_debug_file("alass-voice-activity-data")
+       })
     }
 
     ///
     /// Recieve incoming samples
     /// 
-    /// Voice-activity data is processed on the fly in `CHUNK_SAMPLES` sized chunks. Remaining
+    /// Voice-activity data is processed on the fly in chunks. Remaining
     /// samples are buffered until the next invocation or the `AudioSink` is closed.
     /// 
     pub fn send_samples(self: &mut AudioSink, samples: &[i16]) -> Result<(), AudioSinkError> {
         if self.state == AudioSinkState::Open {
-            if self.sample_buffer.len() + samples.len() >= CHUNK_SAMPLES {
+            if self.sample_buffer.len() + samples.len() >= self.vad.chunk_size {
 
                 // Combine sink and incoming samples to produce first complete chunk (copy)
-                let mut first_chunk = Vec::with_capacity(CHUNK_SAMPLES);
+                let mut first_chunk = Vec::with_capacity(self.vad.chunk_size);
                 first_chunk.extend_from_slice(self.sample_buffer.as_slice());
-                let len2 = CHUNK_SAMPLES - self.sample_buffer.len();
+                let len2 = self.vad.chunk_size - self.sample_buffer.len();
                 first_chunk.extend_from_slice(&samples[0..len2]);
                 self.process_chunk(&first_chunk)?;
 
                 // Split the rest of the incoming samples into exactly sized chunks (no copy)
-                let remaining_chunks = samples[len2..].chunks_exact(CHUNK_SAMPLES);
+                let remaining_chunks = samples[len2..].chunks_exact(self.vad.chunk_size);
 
                 // Save the remainder of the incoming samples to sample_buffer for next call (copy)
                 self.sample_buffer.clear();
@@ -130,11 +116,12 @@ impl AudioSink {
     ///
     /// Processes a single chunk of samples for voice activity
     /// 
-    /// Chunk must be exactly `CHUNK_SAMPLES` in length.
+    /// Chunk must be exactly `vad.chunk_size` in length.
     /// 
     fn process_chunk(self: &mut AudioSink, chunk: &[i16]) -> Result<(), AudioSinkError> {
-        if chunk.len() != CHUNK_SAMPLES {
-            error!("Error processing samples: chunk length must be exactly CHUNK_SAMPLES ({})", CHUNK_SAMPLES);
+
+        if chunk.len() != self.vad.chunk_size {
+            error!("Error processing samples: chunk length must be exactly {}", self.vad.chunk_size);
             return Err(VoiceDetectionError)
         }
 
@@ -168,12 +155,13 @@ impl AudioSink {
         if self.state == AudioSinkState::Open {
             let buf_len = self.sample_buffer.len();
             if buf_len > 0 {
-                let chunk = &mut vec![0i16; CHUNK_SAMPLES];
+                let chunk = &mut vec![0i16; self.vad.chunk_size];
                 chunk[..buf_len].clone_from_slice(self.sample_buffer.as_slice());
                 self.process_chunk(chunk.as_slice())?;
             }
             self.state = AudioSinkState::Closed
         }
+
         Ok(())
     }
 
@@ -182,7 +170,14 @@ impl AudioSink {
     /// 
     pub fn voice_activity(self: &mut Self) -> VoiceActivity {
         let _ = self.close();
-        VoiceActivity { data: self.vad_buffer.clone(), chunk_millis: CHUNK_MILLIS as u64 }
+        VoiceActivity { data: self.vad_buffer.clone(), chunk_millis: Vad::expected_chunk_millis() }
+    }
+
+    ///
+    /// Returns sample rate (per second) expected by the voice detector.
+    /// 
+    pub fn expected_sample_rate() -> usize {
+        Vad::expected_sample_rate()
     }
 
     #[cfg(any(feature = "debug-sample-data", feature = "debug-voice-activity-data"))]

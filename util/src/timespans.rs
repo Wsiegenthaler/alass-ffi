@@ -36,7 +36,6 @@ pub struct TimeSpans(pub Vec<SubTimeSpan>);
 
 impl TimeSpans {
 
-
     ///
     /// Appends a timespan
     /// 

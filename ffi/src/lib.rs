@@ -18,7 +18,7 @@ pub use voice_activity::*;
 pub use logging::alass_log_config;
 
 use alass_util::{sync, is_format_supported};
-use alass_util::{TimeSpans, SyncOptions, SyncError, SyncError::*};
+use alass_util::{AudioSink, TimeSpans, SyncOptions, SyncError, SyncError::*};
 
 use alass_ffi_macros::catch_panic;
 
@@ -112,6 +112,15 @@ pub extern "C" fn alass_format_is_supported(sub_path: *const c_char) -> ResultCo
             sync_error_code(&e)
         }
     }
+}
+
+///
+/// The sample rate expected by this audio sink (usually either 8kHz or 16kHz).
+///
+#[catch_panic(-1)]
+#[no_mangle]
+pub extern "C" fn alass_expected_sample_rate() -> i32 {
+    AudioSink::expected_sample_rate() as i32
 }
 
 fn sync_error_code(e: &SyncError) -> ResultCode {

@@ -26,8 +26,8 @@ pub extern "C" fn alass_audio_sink_new() -> *mut AudioSink {
 }
 
 ///
-/// Send audio samples to given sink. Samples should be 8kHz 16-bit signed
-/// little-endian mono.
+/// Send audio samples to given sink. Samples should be 16-bit signed little-endian
+/// mono and match the sample rate returned by `alass_audio_sink_sample_rate()`.
 /// 
 #[catch_panic(ALASS_INTERNAL_ERROR)]
 #[no_mangle]
